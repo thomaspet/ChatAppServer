@@ -10,10 +10,13 @@ import (
 	"github.com/gocraft/web"
 )
 
-type HttpContext struct{}
+type HttpContext struct {
+	UserName string
+	Guid     string
+}
 type Message struct {
 	Message    string
-	Timestamp  int64
+	Timestamp  string
 	Author     string
 	AuthorGuid string
 }
@@ -22,13 +25,12 @@ var messages []Message = make([]Message, 100)
 
 func (ctx *HttpContext) SendMessage(rw web.ResponseWriter, req *web.Request) {
 	bytes, _ := ioutil.ReadAll(req.Body)
-	fmt.Println(string(bytes))
 
 	var message Message = Message{
 		Message:    string(bytes),
-		Timestamp:  time.Now().Unix(),
-		Author:     "Anonymous",
-		AuthorGuid: "",
+		Timestamp:  time.Now().Format(time.RFC3339),
+		Author:     ctx.UserName,
+		AuthorGuid: ctx.Guid,
 	}
 
 	// Add to messages, if it's full remove the oldest message
@@ -47,7 +49,7 @@ func (ctx *HttpContext) GetMessages(rw web.ResponseWriter, req *web.Request) {
 	// Return messages as json
 	createdMessages := []Message{}
 	for _, message := range messages {
-		if message.Timestamp != 0 {
+		if message.Timestamp != "" {
 			createdMessages = append(createdMessages, message)
 		}
 	}
