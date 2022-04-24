@@ -24,6 +24,7 @@ func main() {
 	// }
 
 	apiToken := os.Getenv("API_TOKEN")
+	apiToken = "testtoken"
 	if apiToken == "" {
 		log.Fatalln("API_TOKEN not set")
 		return
@@ -127,7 +128,7 @@ func main() {
 
 	host := os.Getenv("HOST")
 	if host == "" {
-		host = "localhost:8080"
+		host = ":443"
 		fmt.Println("HOST not set, defaulting to", host)
 	}
 
