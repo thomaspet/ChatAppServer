@@ -4,25 +4,44 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gocraft/web"
+	"github.com/joho/godotenv"
 )
+
+var apiToken string
 
 func main() {
 	defer SseServer.Shutdown()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	apiToken := os.Getenv("API_TOKEN")
+	if apiToken == "" {
+		fmt.Println("API_TOKEN not set")
+		return
+	}
+
 	server := web.New(HttpContext{})
 	server.Middleware(func(c *HttpContext, rw web.ResponseWriter, req *web.Request, next web.NextMiddlewareFunc) {
-		rw.Header().Set("Access-Control-Allow-Origin", "*")
-		rw.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		rw.Header().Set("Content-Type", "text/event-stream")
-		rw.Header().Set("Cache-Control", "no-cache")
+		if strings.HasPrefix(req.URL.Path, "/events/messages") {
+			rw.Header().Set("Access-Control-Allow-Origin", "*")
+			rw.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			rw.Header().Set("Content-Type", "text/event-stream")
+			rw.Header().Set("Cache-Control", "no-cache")
+		}
 		next(rw, req)
 	})
 	server.Middleware(func(c *HttpContext, rw web.ResponseWriter, req *web.Request, next web.NextMiddlewareFunc) {
 		// if route is events/messages skip validation
-
+		// TODO - Implement auth for subscribing?
 		if strings.HasPrefix(req.URL.Path, "/events/messages") {
 			next(rw, req)
 			return
@@ -90,7 +109,7 @@ func main() {
 			return
 		}
 
-		if apiTokenHeader != "testtoken" {
+		if apiTokenHeader != apiToken {
 			// Write 401 response
 			rw.WriteHeader(http.StatusUnauthorized)
 			rw.Write([]byte("401 - Unauthorized"))
@@ -106,5 +125,11 @@ func main() {
 		SseServer.ServeHTTP(rw, req.Request)
 	})
 
-	http.ListenAndServe("localhost:8080", server)
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "localhost:8080"
+		fmt.Println("HOST not set, defaulting to", host)
+	}
+
+	http.ListenAndServe(host, server)
 }
