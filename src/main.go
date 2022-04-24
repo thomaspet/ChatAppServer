@@ -62,7 +62,7 @@ func main() {
 			// Split token on .
 			authHeaderParts := strings.Split(authHeader, ".")
 			if len(authHeaderParts) != 3 {
-				fmt.Println("Invalid auth header")
+				log.Println("Invalid auth header")
 				rw.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -70,7 +70,7 @@ func main() {
 			// base64 decode 2nd part of tokenparts
 			decoded, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(authHeaderParts[1])
 			if err != nil {
-				fmt.Println("Error decoding auth header", err)
+				log.Println("Error decoding auth header", err)
 				rw.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -79,7 +79,7 @@ func main() {
 			var decodedJson map[string]interface{}
 			err = json.Unmarshal(decoded, &decodedJson)
 			if err != nil {
-				fmt.Println("Error decoding auth header", err)
+				log.Println("Error decoding auth header", err)
 				rw.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -91,7 +91,7 @@ func main() {
 				if !ok {
 					username, ok = decodedJson["email"].(string)
 					if !ok {
-						fmt.Println("Error decoding auth header")
+						log.Println("Error decoding auth header")
 						rw.WriteHeader(http.StatusUnauthorized)
 						return
 					}
@@ -100,7 +100,7 @@ func main() {
 
 			guid, ok := decodedJson["sub"].(string)
 			if !ok {
-				fmt.Println("Error decoding auth header")
+				log.Println("Error decoding auth header")
 				rw.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -109,6 +109,7 @@ func main() {
 			c.UserName = username
 		} else {
 			// Write 401 response
+			log.Println("Missing Auth header")
 			rw.WriteHeader(http.StatusUnauthorized)
 			rw.Write([]byte("401 - Unauthorized"))
 			return
@@ -116,6 +117,7 @@ func main() {
 
 		if apiTokenHeader != apiToken {
 			// Write 401 response
+			log.Println("Invalid API token")
 			rw.WriteHeader(http.StatusUnauthorized)
 			rw.Write([]byte("401 - Unauthorized"))
 			return
