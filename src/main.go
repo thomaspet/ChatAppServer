@@ -24,7 +24,6 @@ func main() {
 	// }
 
 	apiToken := os.Getenv("API_TOKEN")
-	apiToken = "testtoken"
 	if apiToken == "" {
 		log.Fatalln("API_TOKEN not set")
 		return
