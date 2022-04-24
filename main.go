@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gocraft/web"
+	_ "github.com/heroku/x/hmetrics/onload"
 	"github.com/joho/godotenv"
 )
 
