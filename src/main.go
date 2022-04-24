@@ -31,6 +31,10 @@ func main() {
 	}
 
 	server := web.New(HttpContext{})
+
+	server.Middleware(web.LoggerMiddleware)
+	server.Middleware(web.ShowErrorsMiddleware)
+
 	server.Middleware(func(c *HttpContext, rw web.ResponseWriter, req *web.Request, next web.NextMiddlewareFunc) {
 		if strings.HasPrefix(req.URL.Path, "/events/messages") {
 			rw.Header().Set("Access-Control-Allow-Origin", "*")
