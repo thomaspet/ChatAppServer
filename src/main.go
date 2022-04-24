@@ -130,11 +130,11 @@ func main() {
 		SseServer.ServeHTTP(rw, req.Request)
 	})
 
-	host := os.Getenv("HOST")
-	if host == "" {
-		host = ":443"
-		fmt.Println("HOST not set, defaulting to", host)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		fmt.Println("HOST not set, defaulting to", port)
 	}
 
-	log.Println(http.ListenAndServe(host, server))
+	log.Println(http.ListenAndServe(":"+port, server))
 }
