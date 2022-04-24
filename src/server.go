@@ -40,7 +40,7 @@ func (ctx *HttpContext) SendMessage(rw web.ResponseWriter, req *web.Request) {
 		messages = append(messages, message)
 	}
 
-	// PushMessage(message)
+	PushMessage(message)
 
 	rw.WriteHeader(http.StatusOK)
 }
