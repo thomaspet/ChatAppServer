@@ -16,7 +16,7 @@ import (
 var apiToken string
 
 func main() {
-	defer SseServer.Shutdown()
+	// defer SseServer.Shutdown()
 
 	// err := godotenv.Load()
 	// if err != nil {
@@ -126,9 +126,9 @@ func main() {
 	})
 	server.Post("/messages", (*HttpContext).SendMessage)
 	server.Get("/messages", (*HttpContext).GetMessages)
-	server.Get("/events/:channel", func(rw web.ResponseWriter, req *web.Request) {
-		SseServer.ServeHTTP(rw, req.Request)
-	})
+	// server.Get("/events/:channel", func(rw web.ResponseWriter, req *web.Request) {
+	// 	SseServer.ServeHTTP(rw, req.Request)
+	// })
 
 	host := os.Getenv("HOST")
 	if host == "" {
