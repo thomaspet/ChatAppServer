@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 
 	"github.com/alexandrevicenzi/go-sse"
 )
@@ -13,7 +13,7 @@ func PushMessage(message Message) {
 	json, err := json.Marshal(message)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Panicln(err)
 		return
 	}
 	SseServer.SendMessage("/events/messages", sse.SimpleMessage(string(json)))

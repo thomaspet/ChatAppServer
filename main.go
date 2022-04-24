@@ -4,13 +4,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/gocraft/web"
 	_ "github.com/heroku/x/hmetrics/onload"
-	"github.com/joho/godotenv"
 )
 
 var apiToken string
@@ -18,14 +18,14 @@ var apiToken string
 func main() {
 	defer SseServer.Shutdown()
 
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println("Error loading .env file")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	fmt.Println("Error loading .env file")
+	// }
 
 	apiToken := os.Getenv("API_TOKEN")
 	if apiToken == "" {
-		fmt.Println("API_TOKEN not set")
+		log.Fatalln("API_TOKEN not set")
 		return
 	}
 
