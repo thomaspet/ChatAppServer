@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gocraft/web"
 	_ "github.com/heroku/x/hmetrics/onload"
@@ -44,10 +45,18 @@ func main() {
 		next(rw, req)
 	})
 	server.Middleware(func(c *HttpContext, rw web.ResponseWriter, req *web.Request, next web.NextMiddlewareFunc) {
-		// if route is events/messages skip validation
-		// TODO - Implement auth for subscribing?
+		// if route is events/messages check shortlived tokens if exists
 		if strings.HasPrefix(req.URL.Path, "/events/messages") {
-			next(rw, req)
+			shortLivedToken := req.URL.Query().Get("token")
+
+			if shortLivedToken != "" {
+				if ttl, ok := shortLivedTokens[shortLivedToken]; ok && ttl > time.Now().Unix() {
+					delete(shortLivedTokens, shortLivedToken)
+					next(rw, req)
+					return
+				}
+			}
+			rw.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
@@ -133,9 +142,11 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "localhost:8080"
 		fmt.Println("HOST not set, defaulting to", port)
+		log.Println(http.ListenAndServe(port, server))
+	} else {
+		log.Println(http.ListenAndServe(":"+port, server))
 	}
 
-	log.Println(http.ListenAndServe(":"+port, server))
 }

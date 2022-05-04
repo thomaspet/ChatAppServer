@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gocraft/web"
+	"github.com/google/uuid"
 )
 
 type HttpContext struct {
@@ -21,7 +22,13 @@ type Message struct {
 	AuthorGuid string
 }
 
+type MessagesResponse struct {
+	Messages []Message
+	Token    string
+}
+
 var messages []Message = make([]Message, 100)
+var shortLivedTokens map[string]int64 = make(map[string]int64)
 
 func (ctx *HttpContext) SendMessage(rw web.ResponseWriter, req *web.Request) {
 	bytes, _ := ioutil.ReadAll(req.Body)
@@ -54,7 +61,15 @@ func (ctx *HttpContext) GetMessages(rw web.ResponseWriter, req *web.Request) {
 		}
 	}
 
-	jsonbody, err := json.MarshalIndent(createdMessages, "", "  ")
+	token := uuid.New().String()
+	var messagesResponse MessagesResponse = MessagesResponse{
+		Messages: createdMessages,
+		Token:    token,
+	}
+
+	shortLivedTokens[token] = time.Now().Unix() + 60 // 1 minute TTL
+
+	jsonbody, err := json.MarshalIndent(messagesResponse, "", "  ")
 	if err != nil {
 		fmt.Println(err)
 		rw.WriteHeader(http.StatusBadRequest)
